@@ -4,11 +4,10 @@
              xmlns:local="clr-namespace:GodlessPlayer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!-- Основные стили -->
+        <!-- Стили -->
         <SolidColorBrush x:Key="PrimaryColor" Color="#800080"/>
-        <!-- Фиолетовый -->
-        <SolidColorBrush x:Key="LightBackground" Color="White"/>
-        <SolidColorBrush x:Key="LightForeground" Color="Black"/>
+        <SolidColorBrush x:Key="LightBackground" Color="Transparent"/>
+        <SolidColorBrush x:Key="LightForeground" Color="Transparent"/>
 
         <Style TargetType="Button">
             <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
@@ -18,6 +17,7 @@
         </Style>
 
         <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
         </Style>
 
         <Style TargetType="CheckBox">
@@ -30,11 +30,49 @@
             <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
         </Style>
 
-        <Style TargetType="ListView">
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="0"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalAlignment}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
+        <Style TargetType="ListView">
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="Black"/>
             <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
+        
+        <Style TargetType="ListViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <!-- Триггеры -->
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
     </Application.Resources>
 </Application>

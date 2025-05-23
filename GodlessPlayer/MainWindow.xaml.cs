@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using GodlessPlayer.Data;
+using System.Windows.Controls;
 
 namespace GodlessPlayer
 {
@@ -149,8 +150,26 @@ namespace GodlessPlayer
             TrackListView.Items.Refresh();
         }
 
+        private static T? FindAncestor<T>(DependencyObject current) where T : DependencyObject
+        {
+            while (current != null)
+            {
+                if (current is T)
+                    return (T)current;
+
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return null;
+        }
+
         private void TrackListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (e.OriginalSource is DependencyObject source)
+            {
+                var header = FindAncestor<GridViewColumnHeader>(source);
+                if (header != null)
+                    return;
+            }
             if (TrackListView.SelectedItem is Track selectedTrack)
             {
                 int index = filteredTracks.IndexOf(selectedTrack);
