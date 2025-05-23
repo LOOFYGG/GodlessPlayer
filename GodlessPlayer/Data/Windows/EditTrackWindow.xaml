@@ -1,0 +1,37 @@
+﻿<Window x:Class="GodlessPlayer.EditTrackWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Редактировать трек" Height="250" Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="90"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0" Content="Название:" VerticalAlignment="Center"/>
+        <TextBox x:Name="TitleBox" Grid.Row="0" Grid.Column="1" Margin="5"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Исполнитель:" VerticalAlignment="Center"/>
+        <TextBox x:Name="ArtistBox" Grid.Row="1" Grid.Column="1" Margin="5"/>
+        
+        <Label Grid.Row="2" Grid.Column="0" Content="Жанр:" VerticalAlignment="Center"/>
+        <TextBox x:Name="GenreBox" Grid.Row="2" Grid.Column="1" Margin="5"/>
+        
+        <Label Grid.Row="3" Grid.Column="0" Content="Альбом:" VerticalAlignment="Center"/>
+        <TextBox x:Name="AlbumBox" Grid.Row="3" Grid.Column="1" Margin="5"/>
+
+        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Сохранить" Width="100" Margin="5" Click="Save_Click"/>
+            <Button Content="Отмена" Width="100" Margin="5" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
