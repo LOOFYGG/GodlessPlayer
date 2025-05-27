@@ -15,28 +15,37 @@ namespace GodlessPlayer
 {
     public partial class MainWindow : Window
     {
+        // Контекст базы данных
         private readonly LibraryContext _libraryContext = new();
-        private  List<Track> allTracks = new();
-        private List<Track> filteredTracks = new();
-        private MediaPlayer mediaPlayer = new();
-        private int currentIndex = -1;
-        private bool isPlaying = false;
-        private DispatcherTimer timer = new();
-        private bool isDragging = false;
 
+        // Полный список треков и отфильтрованный (например, для поиска)
+        private List<Track> allTracks = new();
+        private List<Track> filteredTracks = new();
+
+        // Проигрыватель и управление воспроизведением
+        private MediaPlayer mediaPlayer = new();
+        private int currentIndex = -1;      // Индекс текущего воспроизводимого трека
+        private bool isPlaying = false;     // Играет ли сейчас музыка
+        private DispatcherTimer timer = new();  // Таймер для обновления прогресс-бара
+        private bool isDragging = false;    // Перетаскивает ли пользователь слайдер прогресса
+
+        // Конструктор окна
         public MainWindow()
         {
             InitializeComponent();
-            LoadTracksFromDatabase();
-            RefreshTrackListView();
-            TrackListView.ItemsSource = allTracks;
-            TrackListView.ItemsSource = filteredTracks;
+            LoadTracksFromDatabase(); // Загрузка треков из БД
+            RefreshTrackListView();   // Обновление списка
+            TrackListView.ItemsSource = allTracks; // Сначала привязываем полный список
+            TrackListView.ItemsSource = filteredTracks; // Потом — отфильтрованный (только он используется)
+
+            // Подписка на события проигрывателя и таймера
             mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
             mediaPlayer.Volume = VolumeSlider.Value;
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
         }
 
+        // Воспроизведение трека
         private void PlayTrack(Track track)
         {
             if (track == null) return;
@@ -47,6 +56,7 @@ namespace GodlessPlayer
 
             NowPlayingText.Text = $"Сейчас играет: {track.Title} — {track.Artist?.Name ?? "Неизвестен"}";
 
+            // Когда файл откроется, обновим длительность
             mediaPlayer.MediaOpened += (s, e) =>
             {
                 if (mediaPlayer.NaturalDuration.HasTimeSpan)
@@ -59,6 +69,7 @@ namespace GodlessPlayer
             timer.Start();
         }
 
+        // Загрузка MP3-файлов из проводника
         private void LoadFiles_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -74,10 +85,12 @@ namespace GodlessPlayer
                 {
                     if (!File.Exists(filePath)) continue;
 
+                    // Задание значений по умолчанию
                     string defaultArtistName = "Неизвестен";
                     string defaultAlbumName = "Без альбома";
                     string defaultGenreName = "Какой?";
 
+                    // Поиск существующих или создание новых объектов
                     var artist = _libraryContext.Artists.FirstOrDefault(a => a.Name == defaultArtistName)
                                  ?? new Artist { Name = defaultArtistName };
 
@@ -87,6 +100,7 @@ namespace GodlessPlayer
                     var genre = _libraryContext.Genres.FirstOrDefault(g => g.Name == defaultGenreName)
                                  ?? new Genre { Name = defaultGenreName };
 
+                    // Создание нового трека
                     var track = new Track
                     {
                         Path = filePath,
@@ -106,6 +120,7 @@ namespace GodlessPlayer
             }
         }
 
+        // Удаление выбранного трека
         private void DeleteTrack_Click(object sender, RoutedEventArgs e)
         {
             if (TrackListView.SelectedItem is Track selected)
@@ -126,6 +141,7 @@ namespace GodlessPlayer
             }
         }
 
+        // Редактирование выбранного трека
         private void EditTrack_Click(object sender, RoutedEventArgs e)
         {
             if (TrackListView.SelectedItem is Track selected)
@@ -133,7 +149,7 @@ namespace GodlessPlayer
                 var dialog = new EditTrackWindow(selected);
                 if (dialog.ShowDialog() == true)
                 {
-                    RefreshTrackListView();
+                    RefreshTrackListView(); // обновим список после изменений
                 }
             }
             else
@@ -142,14 +158,16 @@ namespace GodlessPlayer
             }
         }
 
+        // Обновление отображения списка треков
         private void RefreshTrackListView()
         {
             if (TrackListView == null) return;
-            TrackListView.ItemsSource = allTracks;
-            TrackListView.ItemsSource = filteredTracks;
-            TrackListView.Items.Refresh();
+            TrackListView.ItemsSource = null;        // Сброс
+            TrackListView.ItemsSource = filteredTracks; // Установка отфильтрованного списка
+            TrackListView.Items.Refresh();           // Принудительное обновление
         }
 
+        // Поиск визуального родителя в дереве визуальных элементов
         private static T? FindAncestor<T>(DependencyObject current) where T : DependencyObject
         {
             while (current != null)
@@ -162,14 +180,15 @@ namespace GodlessPlayer
             return null;
         }
 
+        // Обработка двойного клика по треку — начать воспроизведение
         private void TrackListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource is DependencyObject source)
             {
                 var header = FindAncestor<GridViewColumnHeader>(source);
-                if (header != null)
-                    return;
+                if (header != null) return;
             }
+
             if (TrackListView.SelectedItem is Track selectedTrack)
             {
                 int index = filteredTracks.IndexOf(selectedTrack);
@@ -181,6 +200,7 @@ namespace GodlessPlayer
             }
         }
 
+        // Кнопка "Предыдущий"
         private void PreviousTrack_Click(object sender, RoutedEventArgs e)
         {
             if (allTracks.Count == 0) return;
@@ -189,6 +209,7 @@ namespace GodlessPlayer
             PlayTrack(allTracks[currentIndex]);
         }
 
+        // Кнопка воспроизведения/паузы
         private void PlayPause_Click(object sender, RoutedEventArgs e)
         {
             if (currentIndex < 0 && allTracks.Count > 0)
@@ -212,6 +233,7 @@ namespace GodlessPlayer
             }
         }
 
+        // Кнопка "Следующий"
         private void NextTrack_Click(object sender, RoutedEventArgs e)
         {
             if (ShuffleCheckBox.IsChecked == true)
@@ -227,6 +249,7 @@ namespace GodlessPlayer
             PlayTrack(allTracks[currentIndex]);
         }
 
+        // Событие окончания трека
         private void MediaPlayer_MediaEnded(object sender, EventArgs e)
         {
             if (RepeatCheckBox.IsChecked == true)
@@ -239,11 +262,13 @@ namespace GodlessPlayer
             }
         }
 
+        // Изменение громкости
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             mediaPlayer.Volume = VolumeSlider.Value;
         }
 
+        // Таймер обновляет прогресс трека каждую секунду
         private void Timer_Tick(object sender, EventArgs e)
         {
             if (!isDragging && mediaPlayer.NaturalDuration.HasTimeSpan)
@@ -253,6 +278,7 @@ namespace GodlessPlayer
             }
         }
 
+        // Загрузка треков из базы данных при запуске
         private void LoadTracksFromDatabase()
         {
             allTracks.Clear();
@@ -267,6 +293,7 @@ namespace GodlessPlayer
             RefreshTrackListView();
         }
 
+        // Обработка перемещения слайдера воспроизведения
         private void TrackProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (isDragging)
@@ -288,17 +315,21 @@ namespace GodlessPlayer
                 mediaPlayer.Position = TimeSpan.FromSeconds(TrackProgressSlider.Value);
             }
         }
+
+        // Обработка поиска по полям трека
         private void SearchBox_TextChanged(object sender, EventArgs e)
         {
             String query = SearchBox.Text.ToLower();
 
             filteredTracks = allTracks.Where(track =>
-            (!string.IsNullOrEmpty(track.Title) && track.Title.ToLower().Contains(query)) ||
-            (!string.IsNullOrEmpty(track.Artist.Name) && track.Artist.Name.ToLower().Contains(query)) ||
-            (!string.IsNullOrEmpty(track.Album.Name) && track.Album.Name.ToLower().Contains(query)) ||
-            (!string.IsNullOrEmpty(track.Genre.Name) && track.Genre.Name.ToLower().Contains(query))
+                (!string.IsNullOrEmpty(track.Title) && track.Title.ToLower().Contains(query)) ||
+                (!string.IsNullOrEmpty(track.Artist.Name) && track.Artist.Name.ToLower().Contains(query)) ||
+                (!string.IsNullOrEmpty(track.Album.Name) && track.Album.Name.ToLower().Contains(query)) ||
+                (!string.IsNullOrEmpty(track.Genre.Name) && track.Genre.Name.ToLower().Contains(query))
             ).ToList();
+
             RefreshTrackListView();
         }
     }
+
 }
